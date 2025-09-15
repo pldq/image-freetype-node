@@ -1,0 +1,7 @@
+/.idea/
+third_party
+node_modules
+package-lock.json
+
+cmake-build-debug
+build
