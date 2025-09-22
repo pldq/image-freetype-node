@@ -10,7 +10,7 @@ generate_dir=${build_dir}/generated
 rm -rf ${build_dir}
 
 cmake -B ${generate_dir}/freetype/ \
-  -DBUILD_SHARED_LIBS=false \
+  -DBUILD_SHARED_LIBS=true \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/freetype \
   vendor/freetype
@@ -19,7 +19,7 @@ cmake --build ${generate_dir}/freetype/ --target install
 export FREETYPE_DIR=${build_dir}/freetype
 cmake -B ${generate_dir}/harfbuzz/ \
   -DHB_HAVE_FREETYPE=ON \
-  -DBUILD_SHARED_LIBS=false \
+  -DBUILD_SHARED_LIBS=true \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/harfbuzz \
   vendor/harfbuzz
@@ -29,7 +29,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${build_dir}/freetype/lib/pkgconfig/:${b
 
 cmake -B ${generate_dir}/opencv/ \
    -DOPENCV_EXTRA_MODULES_PATH=vendor/opencv_contrib/modules/freetype \
-   -DBUILD_SHARED_LIBS=OFF \
+   -DBUILD_SHARED_LIBS=ON \
    -DBUILD_JAVA=OFF \
    -DBUILD_FAT_JAVA_LIB=OFF \
    -DBUILD_TESTS=OFF \
@@ -40,7 +40,7 @@ cmake -B ${generate_dir}/opencv/ \
    -DBUILD_opencv_features2d=OFF \
    -DBUILD_opencv_flann=OFF \
    -DBUILD_opencv_highgui=OFF \
-   -DBUILD_opencv_imgcodecs=OFF \
+   -DBUILD_opencv_imgcodecs=ON \
    -DBUILD_opencv_imgproc=ON \
    -DBUILD_opencv_java_bindings_generator=OFF \
    -DBUILD_opencv_gapi=OFF \
