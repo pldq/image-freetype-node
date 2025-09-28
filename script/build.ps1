@@ -14,6 +14,7 @@ if (Test-Path $build_dir) {
 cmake -B "${generate_dir}\freetype\" `
   -DBUILD_SHARED_LIBS=true `
   -DCMAKE_BUILD_TYPE=Release `
+  -DDISABLE_FORCE_DEBUG_POSTFIX=true `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\freetype" `
   vendor/freetype
 cmake --build "${generate_dir}\freetype\" --target install
