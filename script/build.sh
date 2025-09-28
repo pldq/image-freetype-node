@@ -6,24 +6,25 @@ cd ..
 
 build_dir=$(pwd)/build
 generate_dir=${build_dir}/generated
+$target="Debug"
 
 rm -rf ${build_dir}
 
 cmake -B ${generate_dir}/freetype/ \
   -DBUILD_SHARED_LIBS=true \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE="${target}" \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/freetype \
   vendor/freetype
-cmake --build ${generate_dir}/freetype/ --config Release --target install
+cmake --build ${generate_dir}/freetype/ --config "${target}" --target install
 
 export FREETYPE_DIR=${build_dir}/freetype
 cmake -B ${generate_dir}/harfbuzz/ \
   -DHB_HAVE_FREETYPE=ON \
   -DBUILD_SHARED_LIBS=true \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE="${target}" \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/harfbuzz \
   vendor/harfbuzz
-cmake --build ${generate_dir}/harfbuzz/ --config Release --target install
+cmake --build ${generate_dir}/harfbuzz/ --config "${target}" --target install
 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${build_dir}/freetype/lib/pkgconfig/:${build_dir}/harfbuzz/lib/pkgconfig/
 
@@ -58,6 +59,7 @@ cmake -B ${generate_dir}/opencv/ \
    -DBUILD_opencv_videoio=OFF \
    -DBUILD_EXAMPLES=OFF \
    -DWITH_FREETYPE=ON \
+   -DCMAKE_BUILD_TYPE="${target}" \
    -DCMAKE_INSTALL_PREFIX=${build_dir}/opencv \
    vendor/opencv
-cmake --build ${generate_dir}/opencv/ --target install
+cmake --build ${generate_dir}/opencv/ --config "${target}" --target install
