@@ -14,10 +14,9 @@ if (Test-Path $build_dir) {
 cmake -B "${generate_dir}\freetype\" `
   -DBUILD_SHARED_LIBS=true `
   -DCMAKE_BUILD_TYPE=Release `
-  -DDISABLE_FORCE_DEBUG_POSTFIX=true `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\freetype" `
   vendor/freetype
-cmake --build "${generate_dir}\freetype\" --target install
+cmake --build "${generate_dir}\freetype\" --config Release --target install
 
 $env:FREETYPE_DIR = "${build_dir}\freetype"
 
@@ -27,7 +26,7 @@ cmake -B "${generate_dir}\harfbuzz\" `
   -DCMAKE_BUILD_TYPE=Release `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\harfbuzz" `
   vendor/harfbuzz
-cmake --build "${generate_dir}\harfbuzz\" --target install
+cmake --build "${generate_dir}\harfbuzz\" --config Release --target install
 
 $env:PKG_CONFIG_PATH = "$env:PKG_CONFIG_PATH;${build_dir}\freetype\lib\pkgconfig\;${build_dir}\harfbuzz\lib\pkgconfig\"
 
@@ -63,5 +62,6 @@ cmake -B "${generate_dir}\opencv\" `
    -DBUILD_EXAMPLES=OFF `
    -DWITH_FREETYPE=ON `
    -DCMAKE_INSTALL_PREFIX="${build_dir}\opencv" `
+   -C script/generate_find_package_args.cmake `
    vendor/opencv
 cmake --build "${generate_dir}\opencv\" --target install

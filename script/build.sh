@@ -12,10 +12,9 @@ rm -rf ${build_dir}
 cmake -B ${generate_dir}/freetype/ \
   -DBUILD_SHARED_LIBS=true \
   -DCMAKE_BUILD_TYPE=Release \
-  -DDISABLE_FORCE_DEBUG_POSTFIX=true \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/freetype \
   vendor/freetype
-cmake --build ${generate_dir}/freetype/ --target install
+cmake --build ${generate_dir}/freetype/ --config Release --target install
 
 export FREETYPE_DIR=${build_dir}/freetype
 cmake -B ${generate_dir}/harfbuzz/ \
@@ -24,7 +23,7 @@ cmake -B ${generate_dir}/harfbuzz/ \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=${build_dir}/harfbuzz \
   vendor/harfbuzz
-cmake --build ${generate_dir}/harfbuzz/ --target install
+cmake --build ${generate_dir}/harfbuzz/ --config Release --target install
 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${build_dir}/freetype/lib/pkgconfig/:${build_dir}/harfbuzz/lib/pkgconfig/
 
