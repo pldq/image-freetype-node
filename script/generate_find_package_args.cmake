@@ -24,7 +24,7 @@ if (PKG_CONFIG_FOUND)
 
         if (should_cache)
             set(${var} "${${var}}" CACHE INTERNAL "Converted from pkg_check_modules")
-            message(STATUS "Cached variable: ${var} = ${${var}}")
+            # message(STATUS "Cached variable: ${var} = ${${var}}")
         endif ()
     endforeach ()
 else ()
