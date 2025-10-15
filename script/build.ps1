@@ -41,6 +41,7 @@ cmake -B "${generate_dir}\opencv\" `
    -DBUILD_FAT_JAVA_LIB=OFF `
    -DBUILD_TESTS=OFF `
    -DBUILD_PERF_TESTS=OFF `
+   -DBUILD_ITT=OFF `
    -DBUILD_opencv_apps=OFF `
    -DBUILD_opencv_calib3d=OFF `
    -DBUILD_opencv_dnn=OFF `
