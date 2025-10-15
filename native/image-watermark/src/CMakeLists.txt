@@ -42,7 +42,7 @@ if (BUILD_SHARED_LIBS)
 endif ()
 
 target_include_directories(image_watermark
-        PRIVATE
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
