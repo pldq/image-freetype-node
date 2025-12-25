@@ -14,8 +14,8 @@ if (Test-Path $build_dir) {
 
 cmake -B "${generate_dir}\freetype\" `
   -DBUILD_SHARED_LIBS=false `
-  -DCMAKE_POSITION_INDEPENDENT_CODE=true \
-  -DFT_DISABLE_HARFBUZZ=ON \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=true `
+  -DFT_DISABLE_HARFBUZZ=ON `
   -DCMAKE_BUILD_TYPE="${target}" `
   -DDISABLE_FORCE_DEBUG_POSTFIX=true `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\freetype" `
