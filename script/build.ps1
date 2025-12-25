@@ -13,7 +13,9 @@ if (Test-Path $build_dir) {
 }
 
 cmake -B "${generate_dir}\freetype\" `
-  -DBUILD_SHARED_LIBS=true `
+  -DBUILD_SHARED_LIBS=false `
+  -DCMAKE_POSITION_INDEPENDENT_CODE=true \
+  -DFT_DISABLE_HARFBUZZ=ON \
   -DCMAKE_BUILD_TYPE="${target}" `
   -DDISABLE_FORCE_DEBUG_POSTFIX=true `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\freetype" `
@@ -23,8 +25,9 @@ cmake --build "${generate_dir}\freetype\" -j --config "${target}" --target insta
 $env:FREETYPE_DIR = "${build_dir}\freetype"
 
 cmake -B "${generate_dir}\harfbuzz\" `
+  -DCMAKE_POSITION_INDEPENDENT_CODE=true `
   -DHB_HAVE_FREETYPE=ON `
-  -DBUILD_SHARED_LIBS=true `
+  -DBUILD_SHARED_LIBS=false `
   -DCMAKE_BUILD_TYPE="${target}" `
   -DCMAKE_INSTALL_PREFIX="${build_dir}\harfbuzz" `
   vendor/harfbuzz

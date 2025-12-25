@@ -46,12 +46,14 @@ target_include_directories(image_watermark
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
-target_link_libraries(image_watermark ${OpenCV_LIBS})
+MESSAGE(STATUS "OpenCV_LIBS = ${OpenCV_LIBS}")
 
-add_custom_command(
-        TARGET image_watermark
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        ${OpenCV_INSTALL_PATH}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin ${FREETYPE_PREFIX}/bin ${HARFBUZZ_PREFIX}/bin
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+target_link_libraries(image_watermark
+        ${OpenCV_LIBS}
+)
+
+install(TARGETS image_watermark
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BIN}
+        RUNTIME_DEPENDENCIES
+        DESTINATION ${CMAKE_INSTALL_BIN}
 )

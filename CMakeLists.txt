@@ -15,9 +15,4 @@ endif ()
 
 enable_testing()
 
-# need to add PKG_CONFIG PATH
-find_package(PkgConfig REQUIRED)
-
-include(script/generate_find_package_args.cmake)
-
 add_subdirectory(native/image-watermark)

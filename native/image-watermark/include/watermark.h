@@ -3,10 +3,14 @@
 
 #include "opencv2/imgproc.hpp"
 
+#ifdef WIN32
 #ifdef WATERMARKDLL_EXPORTS
 #define WATERMARK_API __declspec(dllexport)
 #else
 #define WATERMARK_API __declspec(dllimport)
+#endif
+#else
+#define WATERMARK_API
 #endif
 
 #ifdef __cplusplus
