@@ -52,8 +52,31 @@ target_link_libraries(image_watermark
         ${OpenCV_LIBS}
 )
 
-install(TARGETS image_watermark
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BIN}
-        RUNTIME_DEPENDENCIES
-        DESTINATION ${CMAKE_INSTALL_BIN}
+if (WIN32)
+    set(DEPENDENCIES_FILES
+            ${OpenCV_INSTALL_PATH}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin
+    )
+    message(STATUS "Copy dependencies files ${DEPENDENCIES_FILES} to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    add_custom_command(
+            TARGET image_watermark
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            ${DEPENDENCIES_FILES}
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+endif ()
+
+include(GNUInstallDirs)
+
+install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS})
+
+install(TARGETS image_watermark)
+
+install(
+        # Note the trailing slash in the argument to `DIRECTORY'!
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        COMPONENT headers
 )
+
+message(STATUS "Build files have been install to: ${CMAKE_INSTALL_PREFIX}")
