@@ -3,6 +3,9 @@ project(image_watermark)
 set(OPENCV_MAP_IMPORTED_CONFIG "")
 set(BUILD_SHARED_LIBS ON)
 
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 find_package(OpenCV REQUIRED core imgcodecs imgproc freetype)
 
 if (OPENCV_FOUND)
@@ -46,8 +49,6 @@ target_include_directories(image_watermark
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
-MESSAGE(STATUS "OpenCV_LIBS = ${OpenCV_LIBS}")
-
 target_link_libraries(image_watermark
         ${OpenCV_LIBS}
 )
@@ -68,13 +69,13 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS})
+install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS} LIBRARY DESTINATION bin)
 
-install(TARGETS image_watermark)
+install(TARGETS image_watermark LIBRARY DESTINATION bin)
 
 install(
         # Note the trailing slash in the argument to `DIRECTORY'!
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ ${OpenCV_INCLUDE_DIRS}/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         COMPONENT headers
 )
