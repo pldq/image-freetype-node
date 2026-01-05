@@ -2,6 +2,7 @@
 
 #include "opencv2/freetype.hpp"
 #include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 
 #include <iostream>
 
@@ -30,7 +31,16 @@ BOOL WINAPI DllMain(
 }
 #endif
 
-cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
+
+inline cv::Scalar _convert_rgb_to_scalar(const RGBColor v) {
+    return cv::Scalar(
+        v & 0xFF,
+        v >> 8 & 0xFF,
+        v >> 16 & 0xFF,
+        255);
+}
+
+cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
     const auto ft2 = cv::freetype::createFreeType2();
     ft2->loadFontData(properties.fontFilename, properties.fontIdx);
     int baseline = 0;
@@ -49,9 +59,9 @@ cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
     ft2->putText(img, properties.watermarkText,
                  cv::Point(0, -baseline),
                  properties.fontHeight,
-                 properties.textColor,
+                 _convert_rgb_to_scalar(properties.textColor),
                  properties.thickness,
-                 properties.lineStyle,
+                 cv::LINE_AA,
                  false);
     if (properties.printWatermarkImg) {
         std::cout << "width = " << width << ", height = " << height << std::endl;
@@ -92,4 +102,103 @@ cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
         height = img.rows;
     }
     return img;
+}
+
+inline cv::Mat _convert_bgra_to_target_format(const cv::Mat &src, const int channel, const int type) {
+    cv::Mat result;
+    int code = 0;
+    switch (channel) {
+        case 1:
+            code = cv::COLOR_BGRA2GRAY;
+        case 3:
+            code = cv::COLOR_BGRA2BGR;
+            cv::cvtColor(src, result, code);
+            break;
+        default:
+            std::cout << "Error: Unsupported number of channels: " << channel << std::endl;
+            result = src;
+    }
+    if (result.type() != type) {
+        result.convertTo(result, type);
+    }
+    return result;
+}
+
+void _overlay_image_region(const cv::Mat &src, const cv::Mat &overlay, int x, int y,
+                           const WATERMARK_PROPERTIES &properties) {
+    const int width = src.cols;
+    const int height = src.rows;
+
+    const int overlay_width = overlay.cols;
+    const int overlay_height = overlay.rows;
+
+    const int w = cv::min(overlay_width, width - x);
+    const int h = cv::min(overlay_height, height - y);
+
+    auto roi = src(cv::Rect(x, y, w, h));
+    auto overlayRoi = overlay;
+    if (w <= overlay_width || h <= overlay_height) {
+        overlayRoi = overlay(cv::Rect(0, 0, w, h));
+    }
+    overlayRoi = _convert_bgra_to_target_format(overlayRoi, src.channels(), src.type());
+
+    cv::addWeighted(roi, 1, overlayRoi, properties.opacity / 255.0, 0, roi);
+}
+
+void _overlay_watermark_mask(const cv::Mat &src, const WATERMARK_PROPERTIES &properties) {
+    auto watermark = _generate_watermark_img(properties);
+
+    const int watermarkWidth = watermark.cols;
+    const int watermarkHeight = watermark.rows;
+
+    const int width = src.cols;
+    const int height = src.rows;
+
+    if (watermarkWidth <= width && watermarkHeight <= height) {
+        for (int x = 0; x < width; x += watermarkWidth) {
+            for (int y = 0; y < height; y += watermarkHeight) {
+                _overlay_image_region(src, watermark, x, y, properties);
+            }
+        }
+    } else {
+        std::cout << "Target image size (" << width << "x" << height << ")"
+                << " is smaller than watermark image size (" << watermarkWidth << "x" << watermarkHeight << ")"
+                << ", overlay will be skipped." << std::endl;
+    }
+}
+
+inline cv::Mat _overlayWatermarkMaskFromBytes(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties) {
+    const auto src = cv::imdecode(buffer, cv::IMREAD_COLOR);
+    _overlay_watermark_mask(src, properties);
+    return src;
+}
+
+inline cv::Mat _overlayWatermarkMaskFromFile(const std::string &filename, const WATERMARK_PROPERTIES &properties) {
+    const auto src = cv::imread(filename);
+    _overlay_watermark_mask(src, properties);
+    return src;
+}
+
+bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties,
+                          const std::string &ext, std::vector<std::uint8_t> &out) {
+    const auto src = _overlayWatermarkMaskFromBytes(buffer, properties);
+    return cv::imencode(ext, src, out);
+}
+
+bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties,
+                          const std::string &targetFileName) {
+    const auto src = _overlayWatermarkMaskFromBytes(buffer, properties);
+    return cv::imwrite(targetFileName, src);
+}
+
+bool overlayWatermarkMask(const std::string &filename, const WATERMARK_PROPERTIES &properties,
+                          const std::string &ext, std::vector<std::uint8_t> &out) {
+    const auto src = _overlayWatermarkMaskFromFile(filename, properties);
+    return cv::imencode(ext, src, out);
+}
+
+bool overlayWatermarkMask(const std::string &filename, const WATERMARK_PROPERTIES &properties,
+                          const std::string &targetFileName) {
+    const auto src = _overlayWatermarkMaskFromFile(filename, properties);
+    return cv::imwrite(targetFileName, src);
 }
