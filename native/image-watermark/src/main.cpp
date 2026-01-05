@@ -31,16 +31,19 @@ BOOL WINAPI DllMain(
 }
 #endif
 
+#ifndef _WIN32
+#define min cv::min
+#endif
 
-inline cv::Scalar _convert_rgb_to_scalar(const RGBColor v) {
-    return cv::Scalar(
-        v & 0xFF,
-        v >> 8 & 0xFF,
-        v >> 16 & 0xFF,
-        255);
+inline cv::Scalar convertRGB2Scalar(const RGBColor v) {
+    return {
+        static_cast<double>(v & 0xFF),
+        static_cast<double>(v >> 8 & 0xFF),
+        static_cast<double>(v >> 16 & 0xFF),
+        255};
 }
 
-cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
+cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
     const auto ft2 = cv::freetype::createFreeType2();
     ft2->loadFontData(properties.fontFilename, properties.fontIdx);
     int baseline = 0;
@@ -59,7 +62,7 @@ cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
     ft2->putText(img, properties.watermarkText,
                  cv::Point(0, -baseline),
                  properties.fontHeight,
-                 _convert_rgb_to_scalar(properties.textColor),
+                 convertRGB2Scalar(properties.textColor),
                  properties.thickness,
                  cv::LINE_AA,
                  false);
@@ -67,7 +70,7 @@ cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
         std::cout << "width = " << width << ", height = " << height << std::endl;
         cv::imwrite("watermark.png", img);
     }
-    const auto center = cv::Point2f(width / 2.0, height / 2.0);
+    const auto center = cv::Point2d(width / 2.0, height / 2.0);
     if (properties.rorationAngle != nullptr) {
         const double angle = *properties.rorationAngle;
 
@@ -88,7 +91,7 @@ cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
 
         cv::warpAffine(img, dest,
                        rotationMat,
-                       cv::Size(rotatedWidth, rotatedHeight)
+                       cv::Size(static_cast<int>(rotatedWidth), static_cast<int>(rotatedHeight))
         );
         if (properties.printWatermarkImg) {
             std::cout << "rorationAngle = " << angle
@@ -98,18 +101,18 @@ cv::Mat _generate_watermark_img(const WATERMARK_PROPERTIES &properties) {
             cv::imwrite("watermark_rotated.png", dest);
         }
         img = dest;
-        width = img.cols;
-        height = img.rows;
     }
     return img;
 }
 
-inline cv::Mat _convert_bgra_to_target_format(const cv::Mat &src, const int channel, const int type) {
+inline cv::Mat convertBGRA2TargetFormat(const cv::Mat &src, const int channel, const int type) {
     cv::Mat result;
     int code = 0;
     switch (channel) {
         case 1:
             code = cv::COLOR_BGRA2GRAY;
+            cv::cvtColor(src, result, code);
+            break;
         case 3:
             code = cv::COLOR_BGRA2BGR;
             cv::cvtColor(src, result, code);
@@ -124,7 +127,7 @@ inline cv::Mat _convert_bgra_to_target_format(const cv::Mat &src, const int chan
     return result;
 }
 
-void _overlay_image_region(const cv::Mat &src, const cv::Mat &overlay, int x, int y,
+void overlayImageRegion(const cv::Mat &src, const cv::Mat &overlay, int x, int y,
                            const WATERMARK_PROPERTIES &properties) {
     const int width = src.cols;
     const int height = src.rows;
@@ -132,21 +135,21 @@ void _overlay_image_region(const cv::Mat &src, const cv::Mat &overlay, int x, in
     const int overlay_width = overlay.cols;
     const int overlay_height = overlay.rows;
 
-    const int w = cv::min(overlay_width, width - x);
-    const int h = cv::min(overlay_height, height - y);
+    const int w = min(overlay_width, width - x);
+    const int h = min(overlay_height, height - y);
 
     auto roi = src(cv::Rect(x, y, w, h));
     auto overlayRoi = overlay;
     if (w <= overlay_width || h <= overlay_height) {
         overlayRoi = overlay(cv::Rect(0, 0, w, h));
     }
-    overlayRoi = _convert_bgra_to_target_format(overlayRoi, src.channels(), src.type());
+    overlayRoi = convertBGRA2TargetFormat(overlayRoi, src.channels(), src.type());
 
     cv::addWeighted(roi, 1, overlayRoi, properties.opacity / 255.0, 0, roi);
 }
 
-void _overlay_watermark_mask(const cv::Mat &src, const WATERMARK_PROPERTIES &properties) {
-    auto watermark = _generate_watermark_img(properties);
+void overlayWatermarkMask(const cv::Mat &src, const WATERMARK_PROPERTIES &properties) {
+    auto watermark = generateWatermarkImg(properties);
 
     const int watermarkWidth = watermark.cols;
     const int watermarkHeight = watermark.rows;
@@ -157,7 +160,7 @@ void _overlay_watermark_mask(const cv::Mat &src, const WATERMARK_PROPERTIES &pro
     if (watermarkWidth <= width && watermarkHeight <= height) {
         for (int x = 0; x < width; x += watermarkWidth) {
             for (int y = 0; y < height; y += watermarkHeight) {
-                _overlay_image_region(src, watermark, x, y, properties);
+                overlayImageRegion(src, watermark, x, y, properties);
             }
         }
     } else {
@@ -167,38 +170,38 @@ void _overlay_watermark_mask(const cv::Mat &src, const WATERMARK_PROPERTIES &pro
     }
 }
 
-inline cv::Mat _overlayWatermarkMaskFromBytes(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties) {
+inline cv::Mat overlayWatermarkMaskFromBytes(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties) {
     const auto src = cv::imdecode(buffer, cv::IMREAD_COLOR);
-    _overlay_watermark_mask(src, properties);
+    overlayWatermarkMask(src, properties);
     return src;
 }
 
-inline cv::Mat _overlayWatermarkMaskFromFile(const std::string &filename, const WATERMARK_PROPERTIES &properties) {
+inline cv::Mat overlayWatermarkMaskFromFile(const std::string &filename, const WATERMARK_PROPERTIES &properties) {
     const auto src = cv::imread(filename);
-    _overlay_watermark_mask(src, properties);
+    overlayWatermarkMask(src, properties);
     return src;
 }
 
 bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties,
                           const std::string &ext, std::vector<std::uint8_t> &out) {
-    const auto src = _overlayWatermarkMaskFromBytes(buffer, properties);
+    const auto src = overlayWatermarkMaskFromBytes(buffer, properties);
     return cv::imencode(ext, src, out);
 }
 
 bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer, const WATERMARK_PROPERTIES &properties,
                           const std::string &targetFileName) {
-    const auto src = _overlayWatermarkMaskFromBytes(buffer, properties);
+    const auto src = overlayWatermarkMaskFromBytes(buffer, properties);
     return cv::imwrite(targetFileName, src);
 }
 
 bool overlayWatermarkMask(const std::string &filename, const WATERMARK_PROPERTIES &properties,
                           const std::string &ext, std::vector<std::uint8_t> &out) {
-    const auto src = _overlayWatermarkMaskFromFile(filename, properties);
+    const auto src = overlayWatermarkMaskFromFile(filename, properties);
     return cv::imencode(ext, src, out);
 }
 
 bool overlayWatermarkMask(const std::string &filename, const WATERMARK_PROPERTIES &properties,
                           const std::string &targetFileName) {
-    const auto src = _overlayWatermarkMaskFromFile(filename, properties);
+    const auto src = overlayWatermarkMaskFromFile(filename, properties);
     return cv::imwrite(targetFileName, src);
 }
