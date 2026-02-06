@@ -26,10 +26,21 @@ int main(int argc, char *argv[]) {
     double rorationAngle = 30;
     properties.rorationAngle = &rorationAngle;
 
-    overlayWatermarkMask("43.jpg", properties, "result.png");
+    std::vector<std::string> extensions{".bmp", ".gif", ".jpg", ".png", ".webp"};
+    for (const auto &ext: extensions) {
+        auto srcImageFile = "test" + ext;
+        overlayWatermarkMask(srcImageFile, properties, "fill_watermark" + ext);
+        std::cout << "Fill watermark " << srcImageFile << " finished." << std::endl;
 
-    std::vector<std::uint8_t> result{};
-    overlayWatermarkMask("BD_Baidu_181.png", properties, ".jpg", result);
-    write2file("result_file.jpg", result);
+        for (const auto &targetExt: extensions) {
+            if (ext != targetExt) {
+                auto targetImageFile = srcImageFile + targetExt;
+                std::vector<std::uint8_t> result{};
+                overlayWatermarkMask(srcImageFile, properties, targetExt, result);
+                write2file(targetImageFile, result);
+                std::cout << "Transfer " << srcImageFile << " to " << targetImageFile << " success." << std::endl;
+            }
+        }
+    }
     return 0;
 }

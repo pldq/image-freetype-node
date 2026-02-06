@@ -17,7 +17,7 @@
 
 typedef std::uint32_t RGBColor;
 
-typedef struct _WATERMARK_PROPERTIES {
+struct WATERMARK_PROPERTIES {
     std::string watermarkText;
     int fontHeight;
     int thickness;
@@ -32,7 +32,7 @@ typedef struct _WATERMARK_PROPERTIES {
     bool printWatermarkImg = false;
 
     double *rorationAngle = nullptr;
-} WATERMARK_PROPERTIES;
+};
 
 WATERMARK_API bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer,
                                         const WATERMARK_PROPERTIES &properties,

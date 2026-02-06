@@ -4,35 +4,41 @@ apt update && apt install -y cmake g++ wget unzip pkg-config
 
 cd ..
 
-build_dir=$(pwd)/build
-generate_dir=${build_dir}/generated
 target="Debug"
+build_dir=$(pwd)/build/${target}
+generate_dir=${build_dir}/generated
 
-rm -rf ${build_dir}
 
-cmake -B ${generate_dir}/freetype/ \
+rm -rf "${build_dir}"
+
+generate_freetype="${generate_dir}/freetype/"
+build_freetype="${build_dir}/freetype/"
+cmake -B "${generate_freetype}" \
   -DBUILD_SHARED_LIBS=false \
   -DCMAKE_POSITION_INDEPENDENT_CODE=true \
   -DFT_DISABLE_HARFBUZZ=ON \
   -DCMAKE_BUILD_TYPE=${target} \
   -DDISABLE_FORCE_DEBUG_POSTFIX=true \
-  -DCMAKE_INSTALL_PREFIX=${build_dir}/freetype \
+  -DCMAKE_INSTALL_PREFIX="${build_freetype}" \
   vendor/freetype
-cmake --build ${generate_dir}/freetype/ -j --config ${target} --target install
+cmake --build "${generate_freetype}" -j --config ${target} --target install
+export FREETYPE_DIR=${build_freetype}
 
-export FREETYPE_DIR=${build_dir}/freetype
-cmake -B ${generate_dir}/harfbuzz/ \
+generate_harfbuzz="${generate_dir}/harfbuzz/"
+build_harfbuzz="${build_dir}/harfbuzz/"
+cmake -B "${generate_harfbuzz}" \
   -DCMAKE_POSITION_INDEPENDENT_CODE=true \
   -DHB_HAVE_FREETYPE=ON \
   -DBUILD_SHARED_LIBS=false \
   -DCMAKE_BUILD_TYPE=${target} \
-  -DCMAKE_INSTALL_PREFIX=${build_dir}/harfbuzz \
+  -DCMAKE_INSTALL_PREFIX="${build_harfbuzz}" \
   vendor/harfbuzz
-cmake --build ${generate_dir}/harfbuzz/ -j --config ${target} --target install
+cmake --build "${generate_harfbuzz}" -j --config ${target} --target install
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${build_freetype}lib/pkgconfig/:${build_harfbuzz}/lib/pkgconfig/
 
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${build_dir}/freetype/lib/pkgconfig/:${build_dir}/harfbuzz/lib/pkgconfig/
-
-cmake -B ${generate_dir}/opencv/ \
+generate_opencv="${generate_dir}/opencv/"
+build_opencv="${build_dir}/opencv/"
+cmake -B "${generate_opencv}" \
    -DOPENCV_EXTRA_MODULES_PATH=vendor/opencv_contrib/modules/freetype \
    -DBUILD_PACKAGE=OFF \
    -DBUILD_PROTOBUF=OFF \
@@ -73,6 +79,14 @@ cmake -B ${generate_dir}/opencv/ \
    -DWITH_PROTOBUF=OFF \
    -DWITH_FREETYPE=ON \
    -DCMAKE_BUILD_TYPE=${target} \
-   -DCMAKE_INSTALL_PREFIX=${build_dir}/opencv \
+   -DCMAKE_INSTALL_PREFIX="${build_opencv}" \
    vendor/opencv
-cmake --build ${generate_dir}/opencv/ -j --config ${target} --target install
+cmake --build "${generate_opencv}" -j --config ${target} --target install
+
+generate_watermark="${generate_dir}/watermark/"
+build_watermark="${build_dir}/watermark/"
+cmake -B "${generate_watermark}" \
+    -DOpenCV_DIR="${build_opencv}\lib\cmake\opencv4" \
+    -DCMAKE_INSTALL_PREFIX="${build_watermark}" \
+    .
+cmake --build "${generate_watermark}" -j --config "${target}" --target install

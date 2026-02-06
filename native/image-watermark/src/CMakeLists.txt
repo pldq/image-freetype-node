@@ -75,7 +75,7 @@ install(TARGETS image_watermark LIBRARY DESTINATION bin)
 
 install(
         # Note the trailing slash in the argument to `DIRECTORY'!
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ ${OpenCV_INCLUDE_DIRS}/
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ # ${OpenCV_INCLUDE_DIRS}/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         COMPONENT headers
 )
