@@ -88,7 +88,7 @@ cmake --build "${generate_opencv}" -j --config "${target}" --target install
 $generate_watermark = "${generate_dir}\watermark\"
 $build_watermark = "${build_dir}\watermark\"
 cmake -B "${generate_watermark}" `
-    -DOpenCV_DIR="${build_opencv}\lib\cmake\opencv4" `
+    -DOpenCV_DIR="${build_opencv}" `
     -DCMAKE_INSTALL_PREFIX="${build_watermark}" `
     .
 cmake --build "${generate_watermark}" -j --config "${target}" --target install
