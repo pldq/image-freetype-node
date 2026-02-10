@@ -89,6 +89,7 @@ $generate_watermark = "${generate_dir}\watermark\"
 $build_watermark = "${build_dir}\watermark\"
 cmake -B "${generate_watermark}" `
     -DOpenCV_DIR="${build_opencv}" `
+    -DCMAKE_BUILD_TYPE="${target}" `
     -DCMAKE_INSTALL_PREFIX="${build_watermark}" `
     .
 cmake --build "${generate_watermark}" -j --config "${target}" --target install
