@@ -3,6 +3,7 @@ third_party
 node_modules
 package-lock.json
 pnpm-lock.yaml
+.pnpm-store
 
 cmake-build-debug
 build
