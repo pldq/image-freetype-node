@@ -20,7 +20,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 
 add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${TEST_IMAGES_PATH}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
