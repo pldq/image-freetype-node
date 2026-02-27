@@ -31,7 +31,8 @@ struct WATERMARK_PROPERTIES {
 
     bool printWatermarkImg = false;
 
-    double *rorationAngle = nullptr;
+    bool needRotation;
+    double rotationAngle;
 };
 
 WATERMARK_API bool overlayWatermarkMask(const std::vector<std::uint8_t> &buffer,

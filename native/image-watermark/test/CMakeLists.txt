@@ -4,29 +4,29 @@ set(TEST_FILES_PATH ${CMAKE_CURRENT_SOURCE_DIR}/testfiles)
 set(TEST_FONTS_PATH ${TEST_FILES_PATH}/fonts)
 set(TEST_IMAGES_PATH ${TEST_FILES_PATH}/images)
 
-add_executable(test_image_watermark main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
-target_include_directories(test_image_watermark
+target_include_directories(${PROJECT_NAME}
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
-target_link_libraries(test_image_watermark image_watermark)
+target_link_libraries(${PROJECT_NAME} image_watermark)
 
-add_custom_command(TARGET test_image_watermark
+add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${TEST_FONTS_PATH}/watermark.ttf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-add_custom_command(TARGET test_image_watermark
+add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         ${TEST_IMAGES_PATH}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
 add_test(NAME generate_watermark
-        COMMAND $<TARGET_FILE:test_image_watermark>
+        COMMAND $<TARGET_FILE:${PROJECT_NAME}>
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 

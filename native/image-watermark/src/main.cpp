@@ -54,8 +54,8 @@ cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
         baseline += properties.thickness;
     }
 
-    int width = textSize.width;
-    int height = textSize.height + baseline * 2;
+    const int width = textSize.width;
+    const int height = textSize.height + baseline * 2;
 
     cv::Mat img(height, width,
                 CV_8UC4, cv::Scalar::all(0));
@@ -71,8 +71,8 @@ cv::Mat generateWatermarkImg(const WATERMARK_PROPERTIES &properties) {
         cv::imwrite("watermark.png", img);
     }
     const auto center = cv::Point2d(width / 2.0, height / 2.0);
-    if (properties.rorationAngle != nullptr) {
-        const double angle = *properties.rorationAngle;
+    if (properties.needRotation) {
+        const double angle = properties.rotationAngle;
 
         auto rotationMat = cv::getRotationMatrix2D(
             center,
@@ -149,7 +149,7 @@ void overlayImageRegion(const cv::Mat &src, const cv::Mat &overlay, int x, int y
 }
 
 void overlayWatermarkMask(const cv::Mat &src, const WATERMARK_PROPERTIES &properties) {
-    auto watermark = generateWatermarkImg(properties);
+    const auto watermark = generateWatermarkImg(properties);
 
     const int watermarkWidth = watermark.cols;
     const int watermarkHeight = watermark.rows;

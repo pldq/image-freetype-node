@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {
     properties.printWatermarkImg = true;
     properties.textColor = 0xCCCCCC;
     properties.opacity = 0.4 * 255;
-    double rorationAngle = 30;
-    properties.rorationAngle = &rorationAngle;
+    properties.needRotation = true;
+    properties.rotationAngle = 30;
 
     std::vector<std::string> extensions{".bmp", ".gif", ".jpg", ".png", ".webp"};
     for (const auto &ext: extensions) {

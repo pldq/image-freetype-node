@@ -22,34 +22,34 @@ set(BASE_SRCS
 
 include_directories(${OPENCV_INCLUDE_DIRS})
 
-add_library(image_watermark
+add_library(${PROJECT_NAME}
         ${PUBLIC_HEADERS}
         ${BASE_SRCS}
 )
 
 if (WIN32)
     if (BUILD_SHARED_LIBS)
-        target_compile_definitions(image_watermark PRIVATE DLL_EXPORT)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE DLL_EXPORT)
     endif ()
 endif ()
 
 if (BUILD_SHARED_LIBS)
     if (BUILD_FRAMEWORK)
-        set_target_properties(image_watermark PROPERTIES
+        set_target_properties(${PROJECT_NAME} PROPERTIES
                 FRAMEWORK TRUE
                 PUBLIC_HEADER "${PUBLIC_HEADERS}"
-                PRODUCT_BUNDLE_IDENTIFIER "image_watermark"
-                OUTPUT_NAME "image_watermark"
+                PRODUCT_BUNDLE_IDENTIFIER "${PROJECT_NAME}"
+                OUTPUT_NAME "${PROJECT_NAME}"
         )
     endif ()
 endif ()
 
-target_include_directories(image_watermark
+target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
-target_link_libraries(image_watermark
+target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
 )
 
@@ -59,7 +59,7 @@ if (WIN32)
     )
     message(STATUS "Copy dependencies files ${DEPENDENCIES_FILES} to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_custom_command(
-            TARGET image_watermark
+            TARGET ${PROJECT_NAME}
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             ${DEPENDENCIES_FILES}
@@ -67,17 +67,19 @@ if (WIN32)
     )
 endif ()
 
-include(GNUInstallDirs)
+if (CMAKE_JS_VERSION)
+    install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS} RUNTIME DESTINATION .)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
+else ()
+    include(GNUInstallDirs)
+    message(STATUS "Build files have been install to: ${CMAKE_INSTALL_PREFIX}")
 
-install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS} LIBRARY DESTINATION bin)
-
-install(TARGETS image_watermark LIBRARY DESTINATION bin)
-
-install(
-        # Note the trailing slash in the argument to `DIRECTORY'!
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ # ${OpenCV_INCLUDE_DIRS}/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        COMPONENT headers
-)
-
-message(STATUS "Build files have been install to: ${CMAKE_INSTALL_PREFIX}")
+    install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS} LIBRARY DESTINATION bin)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION bin)
+    install(
+            # Note the trailing slash in the argument to `DIRECTORY'!
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ # ${OpenCV_INCLUDE_DIRS}/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            COMPONENT headers
+    )
+endif ()
