@@ -4,7 +4,7 @@ choco install -y pkgconfiglite
 
 Push-Location ..
 
-$target = "Debug"
+$target = $args[0]
 $build_dir = (Get-Location).Path + "\deps\${target}"
 $generate_dir = "$build_dir\generated"
 

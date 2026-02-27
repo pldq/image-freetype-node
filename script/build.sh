@@ -4,7 +4,7 @@ apt update && apt install -y cmake g++ wget unzip pkg-config
 
 cd ..
 
-target="Debug"
+target=$1
 build_dir=$(pwd)/build/${target}
 generate_dir=${build_dir}/generated
 
