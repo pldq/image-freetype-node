@@ -1,6 +1,5 @@
 project(test_image_watermark)
 
-set(TEST_FILES_PATH ${CMAKE_CURRENT_SOURCE_DIR}/testfiles)
 set(TEST_FONTS_PATH ${TEST_FILES_PATH}/fonts)
 set(TEST_IMAGES_PATH ${TEST_FILES_PATH}/images)
 
