@@ -48,7 +48,7 @@ jobs:
           OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
         run: |
           cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ env.OPENCV_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
-          cmake --build "${{ env.BUILD_DIR }}" -j --config "${{ matrix.target }}" --target install
+          cmake --build "${{ env.GENERATE_DIR }}" -j --config "${{ matrix.target }}" --target install
       - name: Test native watermark
         uses: threeal/ctest-action@v1.1.0
         with:
