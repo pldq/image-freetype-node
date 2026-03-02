@@ -28,7 +28,7 @@ jobs:
           CACHE_NAME: cache-opencv-artifact
         with:
           path: ./deps/${{ matrix.target }}/opencv
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
+          key: ${{ runner.os }}-${{ matrix.target }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
       - name: Grant execute permission to build script
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
