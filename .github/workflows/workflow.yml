@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*"
+env:
+  OPENCV_CMAKE_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
 jobs:
   native-deps-build:
     strategy:
@@ -44,7 +46,7 @@ jobs:
         env:
           BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
           GENERATE_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
-          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4') }}
+          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ OPENCV_CMAKE_SUFFIX }}
         run: |
           cmake -B "${{ env.GENERATE_DIR }}" \
             -DOpenCV_DIR="${{ github.workspace }}/deps/${{ matrix.target }}/opencv" \ 
@@ -81,7 +83,7 @@ jobs:
         node-version: [ '24.x' ]
     runs-on: ${{ matrix.os }}
     env:
-      OPENCV_DIR: ${{ github.workspace }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4') }}
+      OPENCV_DIR: ${{ github.workspace }}/opencv${{ OPENCV_CMAKE_SUFFIX }}
     steps:
       - uses: actions/checkout@v6
         with:
