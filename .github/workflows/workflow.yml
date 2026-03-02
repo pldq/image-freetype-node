@@ -95,7 +95,7 @@ jobs:
         with:
           name: deps-opencv-${{ runner.os}}-${{ runner.arch }}-Release-${{ github.ref_name }}
           path: ${{ env.OPENCV_DIR }}
-      - run: pnpm ci
+      - run: pnpm i
       - run: pnpm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_SUFFIX }}
         env:
           OPENCV_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
