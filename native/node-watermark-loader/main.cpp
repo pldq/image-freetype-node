@@ -68,9 +68,13 @@ inline WATERMARK_PROPERTIES parseWatermarkProperties(const Napi::Value o) {
 Napi::Value createBufferArrayFromVector(const Napi::Env env, const std::uint8_t *outBytes,
                                                   const std::size_t outByteSize) {
     const auto nodeByteArray = Napi::Buffer<uint8_t>::New(env, outByteSize);
+#ifdef WIN32
     memcpy_s(nodeByteArray.Data(), nodeByteArray.ByteLength(),
              outBytes, outByteSize
     );
+#else
+    memcpy(nodeByteArray.Data(), outBytes, outByteSize);
+#endif
     return nodeByteArray;
 }
 
