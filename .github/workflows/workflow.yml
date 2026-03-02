@@ -48,7 +48,7 @@ jobs:
           OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
         run: |
           cmake -B "${{ env.GENERATE_DIR }}" \
-            -DOpenCV_DIR="${{ github.workspace }}/deps/${{ matrix.target }}/opencv" \ 
+            -DOpenCV_DIR="${{ env.OPENCV_DIR }}" \ 
             -DCMAKE_BUILD_TYPE="${{ matrix.target }}" \
             -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
           cmake --build "${{ env.BUILD_DIR }}" -j --config "${{ matrix.target }}" --target install
@@ -82,7 +82,7 @@ jobs:
         node-version: [ '24.x' ]
     runs-on: ${{ matrix.os }}
     env:
-      OPENCV_DIR: ${{ github.workspace }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
+      OPENCV_DIR: ${{ github.workspace }}/opencv
     steps:
       - uses: actions/checkout@v6
         with:
@@ -98,7 +98,9 @@ jobs:
           name: deps-opencv-${{ runner.os}}-${{ runner.arch }}-Release-${{ github.ref_name }}
           path: ${{ env.OPENCV_DIR }}
       - run: npm ci
-      - run: npm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}
+      - run: npm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_SUFFIX }}
+        env:
+          OPENCV_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
       - run: npm test
       - name: Upload native addon artifacts
         uses: actions/upload-artifact@v6
