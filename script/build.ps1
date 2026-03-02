@@ -85,13 +85,4 @@ cmake -B "${generate_opencv}" `
    vendor/opencv
 cmake --build "${generate_opencv}" -j 2 --config "${target}" --target install
 
-$generate_watermark = "${generate_dir}\watermark\"
-$build_watermark = "${build_dir}\watermark\"
-cmake -B "${generate_watermark}" `
-    -DOpenCV_DIR="${build_opencv}" `
-    -DCMAKE_BUILD_TYPE="${target}" `
-    -DCMAKE_INSTALL_PREFIX="${build_watermark}" `
-    .
-cmake --build "${generate_watermark}" -j --config "${target}" --target install
-
 Pop-Location

@@ -10,43 +10,65 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         target: [ Release, Debug ]
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Run build.sh on Linux/macOS
-        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      - name: Get submodule status hash
+        id: submodule
         shell: bash
-        working-directory: ./script
         run: |
-          chmod +x ./build.sh
-          ./build.sh ${{matrix.target}}
-      - name: Run build.ps1 on Windows
-        if: ${{ runner.os == 'Windows' }}
-        shell: pwsh
+          HASH=$(git submodule status --recursive | sha256sum | cut -d ' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+      - name: Cache opencv artifact
+        id: cache-opencv-artifact
+        uses: actions/cache@v4
+        env:
+          CACHE_NAME: cache-opencv-artifact
+        with:
+          path: ./deps/${{ matrix.target }}/opencv
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
+      - name: Grant execute permission to build script
+        if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
+        run: chmod +x ./build.sh
+      - name: Run build.sh on ${{ runner.os }}
+        env:
+          RUN_SCRIPT_FILE: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', './build.sh', './build.ps1') }}
+        if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
+        working-directory: ./script
+        run: ${{ env.RUN_SCRIPT_FILE }} ${{ matrix.target }}
+      - name: Build native watermark
+        shell: bash
+        env:
+          BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
+          GENERATE_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
         run: |
-          ./build.ps1 ${{matrix.target}}
+          cmake -B "${{ env.GENERATE_DIR }}" \
+            -DOpenCV_DIR="${{ github.workspace }}/deps/${{ matrix.target }}/opencv" \ 
+            -DCMAKE_BUILD_TYPE="${{ matrix.target }}" \
+            -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
+          cmake --build "${{ env.BUILD_DIR }}" -j --config "${{ matrix.target }}" --target install
       - name: Test native watermark
         uses: threeal/ctest-action@v1.1.0
         with:
-          build-config: ${{matrix.target}}
-          test-dir: ${{github.workspace}}/deps/${{matrix.target}}/generated/watermark
+          build-config: ${{ matrix.target }}
+          test-dir: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
           verbose: true
       - name: Upload opencv artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: deps-opencv-${{runner.os}}-${{runner.arch}}-${{matrix.target}}-${{github.ref_name}}
-          path: ./deps/${{matrix.target}}/opencv
+          name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
+          path: ./deps/${{ matrix.target }}/opencv
           if-no-files-found: error
           retention-days: 1
           overwrite: true
       - name: Upload native watermark artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: native-watermark-${{runner.os}}-${{runner.arch}}-${{matrix.target}}-${{github.ref_name}}
-          path: ./deps/${{matrix.target}}/watermark
+          name: native-watermark-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
+          path: ./deps/${{ matrix.target }}/watermark
           if-no-files-found: error
           retention-days: 1
           overwrite: true
@@ -56,9 +78,9 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         node-version: [ '24.x' ]
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     env:
-      OPENCV_DIR: ${{github.workspace}}/opencv
+      OPENCV_DIR: ${{ github.workspace }}/opencv
     steps:
       - uses: actions/checkout@v6
         with:
@@ -71,15 +93,15 @@ jobs:
       - name: Download opencv deps
         uses: actions/download-artifact@v6
         with:
-          name: deps-opencv-${{runner.os}}-${{runner.arch}}-Release-${{github.ref_name}}
-          path: ${{env.OPENCV_DIR}}
+          name: deps-opencv-${{ runner.os}}-${{ runner.arch }}-Release-${{ github.ref_name }}
+          path: ${{ env.OPENCV_DIR }}
       - run: npm ci
-      - run: npm build --CDOpenCV_DIR=${{env.OPENCV_DIR}}
+      - run: npm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}
       - run: npm test
       - name: Upload native addon artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: addon-watermark-${{runner.os}}-${{runner.arch}}-${{github.ref_name}}
+          name: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
           path: ./addon
           if-no-files-found: error
           retention-days: 1
