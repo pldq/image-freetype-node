@@ -81,7 +81,7 @@ cmake -B "${generate_opencv}" \
    -DCMAKE_BUILD_TYPE=${target} \
    -DCMAKE_INSTALL_PREFIX="${build_opencv}" \
    vendor/opencv
-cmake --build "${generate_opencv}" --config ${target} --target install
+cmake --build "${generate_opencv}" -j 2 --config ${target} --target install
 
 generate_watermark="${generate_dir}/watermark/"
 build_watermark="${build_dir}/watermark/"

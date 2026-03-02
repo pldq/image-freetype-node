@@ -83,7 +83,7 @@ cmake -B "${generate_opencv}" `
    -C script/generate_find_package_args.cmake `
    -DCMAKE_BUILD_TYPE="${target}" `
    vendor/opencv
-cmake --build "${generate_opencv}" --config "${target}" --target install
+cmake --build "${generate_opencv}" -j 2 --config "${target}" --target install
 
 $generate_watermark = "${generate_dir}\watermark\"
 $build_watermark = "${build_dir}\watermark\"
