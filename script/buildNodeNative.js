@@ -2,7 +2,7 @@ const {spawnSync} = require("node:child_process");
 const os = require("node:os");
 const path = require("node:path");
 
-const args = ["rebuild", ...process.argv.slice(2)]
+const args = ["rebuild", "-T", "install", ...process.argv.slice(2)]
 
 
 const cmakeDefineProperties = {
