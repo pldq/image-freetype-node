@@ -1,0 +1,105 @@
+name: build-and-release
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+jobs:
+  native-deps-build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        target: [ Release, Debug ]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Run build.sh on Linux/macOS
+        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+        shell: bash
+        working-directory: ./script
+        run: |
+          chmod +x ./build.sh
+          ./build.sh ${{matrix.target}}
+      - name: Run build.ps1 on Windows
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        working-directory: ./script
+        run: |
+          ./build.ps1 ${{matrix.target}}
+      - name: Test native watermark
+        uses: threeal/ctest-action@v1.1.0
+        with:
+          build-config: ${{matrix.target}}
+          test-dir: ${{github.workspace}}/deps/${{matrix.target}}/generated/watermark
+          verbose: true
+      - name: Upload opencv artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: deps-opencv-${{runner.os}}-${{runner.arch}}-${{matrix.target}}-${{github.ref_name}}
+          path: ./deps/${{matrix.target}}/opencv
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+      - name: Upload native watermark artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: native-watermark-${{runner.os}}-${{runner.arch}}-${{matrix.target}}-${{github.ref_name}}
+          path: ./deps/${{matrix.target}}/watermark
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+  prebuild-node-addon:
+    needs: native-deps-build
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        node-version: [ '24.x' ]
+    runs-on: ${{matrix.os}}
+    env:
+      OPENCV_DIR: ${{github.workspace}}/opencv
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version}}
+          cache: pnpm
+      - name: Download opencv deps
+        uses: actions/download-artifact@v6
+        with:
+          name: deps-opencv-${{runner.os}}-${{runner.arch}}-Release-${{github.ref_name}}
+          path: ${{env.OPENCV_DIR}}
+      - run: npm ci
+      - run: npm build --CDOpenCV_DIR=${{env.OPENCV_DIR}}
+      - run: npm test
+      - name: Upload native addon artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: addon-watermark-${{runner.os}}-${{runner.arch}}-${{github.ref_name}}
+          path: ./addon
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+  bundle:
+    name: Bundle prebuilds
+    needs: prebuild-node-addon
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: addon-watermark-*
+          path: tmp
+      - name: Display structure of downloaded files
+        run: |
+          mkdir addon
+          mv tmp/*/* addon/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: image-freetype-node-addon
+          path: addon
+          retention-days: 7
