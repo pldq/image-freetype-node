@@ -45,12 +45,9 @@ jobs:
         env:
           BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
           GENERATE_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
-          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
+          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
         run: |
-          cmake -B "${{ env.GENERATE_DIR }}" \
-            -DOpenCV_DIR="${{ env.OPENCV_DIR }}" \ 
-            -DCMAKE_BUILD_TYPE="${{ matrix.target }}" \
-            -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
+          cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ env.OPENCV_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
           cmake --build "${{ env.BUILD_DIR }}" -j --config "${{ matrix.target }}" --target install
       - name: Test native watermark
         uses: threeal/ctest-action@v1.1.0
@@ -100,7 +97,7 @@ jobs:
       - run: npm ci
       - run: npm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_SUFFIX }}
         env:
-          OPENCV_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '\lib\cmake\opencv4', '') }}
+          OPENCV_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
       - run: npm test
       - name: Upload native addon artifacts
         uses: actions/upload-artifact@v6
