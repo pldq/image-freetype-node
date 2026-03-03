@@ -84,7 +84,7 @@ jobs:
           overwrite: true
       - name: prebuild-node-addon
         if: ${{ matrix.target == 'Release' }}
-        uses: .github/actions/prebuild-node-addon-action
+        uses: ./.github/actions/prebuild-node-addon-action
         with:
           opencv-cmake-find-dir: ${{ steps.opencv-artifact-env.outputs.OPENCV_CMAKE_FIND_SUFFIX }}
   bundle:
