@@ -14,8 +14,11 @@ runs:
         node-version: ${{ matrix.node-version}}
         cache: pnpm
     - run: pnpm i
+      shell: bash
     - run: pnpm build --CDOpenCV_DIR=${{ inputs.opencv-cmake-find-dir }}
+      shell: bash
     - run: pnpm test
+      shell: bash
     - name: Upload native addon artifacts
       uses: actions/upload-artifact@v6
       with:

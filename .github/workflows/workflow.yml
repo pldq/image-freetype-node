@@ -25,6 +25,7 @@ jobs:
           echo "hash=$HASH" >> $GITHUB_OUTPUT
       - name: Setting opencv artifact build environments
         id: opencv-artifact-env
+        shell: bash
         env:
           OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv
           OPENCV_CMAKE_FIND_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
