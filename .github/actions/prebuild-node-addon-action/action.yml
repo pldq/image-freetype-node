@@ -15,7 +15,7 @@ runs:
         cache: pnpm
     - run: pnpm i
       shell: bash
-    - run: pnpm build --CDOpenCV_DIR=${{ inputs.opencv-cmake-find-dir }}
+    - run: pnpm build --CDOpenCV_DIR="${{ inputs.opencv-cmake-find-dir }}"
       shell: bash
     - run: pnpm test
       shell: bash
