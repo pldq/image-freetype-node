@@ -87,7 +87,7 @@ jobs:
         if: ${{ matrix.target == 'Release' }}
         uses: ./.github/actions/prebuild-node-addon-action
         with:
-          opencv-cmake-find-dir: ${{ steps.opencv-artifact-env.outputs.OPENCV_CMAKE_FIND_SUFFIX }}
+          opencv-cmake-find-dir: ${{ steps.opencv-artifact-env.outputs.OPENCV_CMAKE_FIND_DIR }}
   bundle:
     name: Bundle prebuilds
     needs: native-build-and-test
