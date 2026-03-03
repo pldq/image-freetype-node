@@ -39,14 +39,6 @@ jobs:
         with:
           path: ${{ steps.opencv-artifact-env.outputs.OPENCV_BUILD_DIR }}
           key: ${{ runner.os }}-${{ matrix.target }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
-      - name: Upload opencv artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
-          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_DIR }}
-          if-no-files-found: error
-          retention-days: 1
-          overwrite: true
       - name: Grant execute permission to build script
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
@@ -57,6 +49,14 @@ jobs:
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
         run: ${{ env.RUN_SCRIPT_FILE }} ${{ matrix.target }}
+      - name: Upload opencv artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
+          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_DIR }}
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
       - name: Build native watermark
         id: build-native-watermark
         shell: bash
