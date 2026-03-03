@@ -41,7 +41,7 @@ jobs:
           path: ${{ steps.opencv-artifact-env.outputs.OPENCV_BUILD_DIR }}
           key: ${{ runner.os }}-${{ matrix.target }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
       - name: Grant execute permission to build script
-        if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
+        if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' && (runner.os == 'Linux' || runner.os == 'macOS') }}
         working-directory: ./script
         run: chmod +x ./build.sh
       - name: Run build.sh on ${{ runner.os }}
