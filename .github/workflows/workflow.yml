@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
-          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_DIR }}
+          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_BUILD_DIR }}
           if-no-files-found: error
           retention-days: 1
           overwrite: true
