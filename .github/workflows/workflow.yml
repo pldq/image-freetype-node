@@ -34,7 +34,7 @@ jobs:
           echo "OPENCV_CMAKE_FIND_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_CMAKE_FIND_SUFFIX }}" >> $GITHUB_OUTPUT
       - name: Cache opencv artifact
         id: cache-opencv-artifact
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           CACHE_NAME: cache-opencv-artifact
         with:
