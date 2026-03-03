@@ -1,0 +1,26 @@
+name: prebuild-node-addon
+description: This action prebuilds the Node.js native addon, installs dependencies, builds the project, and uploads the resulting artifacts.
+inputs:
+  opencv-cmake-find-dir:
+    description: 'Prebuild opencv artifact directory for cmake find'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: pnpm/action-setup@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ matrix.node-version}}
+        cache: pnpm
+    - run: pnpm i
+    - run: pnpm build --CDOpenCV_DIR=${{ inputs.opencv-cmake-find-dir }}
+    - run: pnpm test
+    - name: Upload native addon artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
+        path: ./addon
+        if-no-files-found: error
+        retention-days: 1
+        overwrite: true

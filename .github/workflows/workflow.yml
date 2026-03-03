@@ -6,11 +6,12 @@ on:
       - "*"
 
 jobs:
-  native-deps-build:
+  native-build-and-test:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         target: [ Release, Debug ]
+        node-version: [ '24.x' ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -22,14 +23,30 @@ jobs:
         run: |
           HASH=$(git submodule status --recursive | sha256sum | cut -d ' ' -f1)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
+      - name: Setting opencv artifact build environments
+        id: opencv-artifact-env
+        env:
+          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv
+          OPENCV_CMAKE_FIND_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
+        run: |
+          echo "OPENCV_BUILD_DIR=${{ env.OPENCV_DIR }}" >> $GITHUB_OUTPUT
+          echo "OPENCV_CMAKE_FIND_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_CMAKE_FIND_SUFFIX }}" >> $GITHUB_OUTPUT
       - name: Cache opencv artifact
         id: cache-opencv-artifact
         uses: actions/cache@v4
         env:
           CACHE_NAME: cache-opencv-artifact
         with:
-          path: ./deps/${{ matrix.target }}/opencv
+          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_BUILD_DIR }}
           key: ${{ runner.os }}-${{ matrix.target }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
+      - name: Upload opencv artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
+          path: ${{ steps.opencv-artifact-env.outputs.OPENCV_DIR }}
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
       - name: Grant execute permission to build script
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
@@ -41,76 +58,38 @@ jobs:
         working-directory: ./script
         run: ${{ env.RUN_SCRIPT_FILE }} ${{ matrix.target }}
       - name: Build native watermark
+        id: build-native-watermark
         shell: bash
         env:
           BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
           GENERATE_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
-          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
         run: |
-          cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ env.OPENCV_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
+          echo "NATIVE_WATERMARK_GENERATE_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
+          echo "NATIVE_WATERMARK_BUILD_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
+          cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ steps.opencv-artifact-env.outputs.OPENCV_CMAKE_FIND_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
           cmake --build "${{ env.GENERATE_DIR }}" -j --config "${{ matrix.target }}" --target install
       - name: Test native watermark
         uses: threeal/ctest-action@v1.1.0
         with:
           build-config: ${{ matrix.target }}
-          test-dir: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
+          test-dir: ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_GENERATE_DIR }}
           verbose: true
-      - name: Upload opencv artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
-          path: ./deps/${{ matrix.target }}/opencv
-          if-no-files-found: error
-          retention-days: 1
-          overwrite: true
       - name: Upload native watermark artifacts
         uses: actions/upload-artifact@v6
         with:
           name: native-watermark-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
-          path: ./deps/${{ matrix.target }}/watermark
+          path: ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_BUILD_DIR }}
           if-no-files-found: error
           retention-days: 1
           overwrite: true
-  prebuild-node-addon:
-    needs: native-deps-build
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
-        node-version: [ '24.x' ]
-    runs-on: ${{ matrix.os }}
-    env:
-      OPENCV_DIR: ${{ github.workspace }}/opencv
-    steps:
-      - uses: actions/checkout@v6
+      - name: prebuild-node-addon
+        if: ${{ matrix.target == 'Release' }}
+        uses: ${{ github.workspace }}/.github/actions/prebuild-node-addon-action
         with:
-          submodules: recursive
-      - uses: pnpm/action-setup@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version}}
-          cache: pnpm
-      - name: Download opencv deps
-        uses: actions/download-artifact@v6
-        with:
-          name: deps-opencv-${{ runner.os}}-${{ runner.arch }}-Release-${{ github.ref_name }}
-          path: ${{ env.OPENCV_DIR }}
-      - run: pnpm i
-      - run: pnpm build --CDOpenCV_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_SUFFIX }}
-        env:
-          OPENCV_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
-      - run: pnpm test
-      - name: Upload native addon artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
-          path: ./addon
-          if-no-files-found: error
-          retention-days: 1
-          overwrite: true
+          opencv-cmake-find-dir: ${{ steps.opencv-artifact-env.outputs.OPENCV_CMAKE_FIND_SUFFIX }}
   bundle:
     name: Bundle prebuilds
-    needs: prebuild-node-addon
+    needs: native-build-and-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v7
