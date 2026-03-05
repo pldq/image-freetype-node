@@ -2,11 +2,22 @@
   "name": "node-watermark-loader",
   "version": "1.0.0",
   "description": "A Node.js module for adding watermarks to images.",
-  "main": "index.js",
+  "main": "js/src/index.js",
+  "bin": {
+    "build-node-watermark-loader-addon": "./script/buildNodeNative.js"
+  },
   "scripts": {
     "build": "node script/buildNodeNative.js",
     "test": "jest"
   },
+  "exports": {
+    ".": "./js/src/index.js"
+  },
+  "files": [
+    "addon/",
+    "script/buildNodeNative.js",
+    "js/src/"
+  ],
   "keywords": [
     "watermark",
     "image",
