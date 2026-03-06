@@ -50,13 +50,13 @@ describe("overlayWatermarkMask", () => {
         const srcExt = path.extname(srcImage);
         const expectFileName = srcExt === ext ? `fill_watermark${srcExt}` : `${testFile}${ext}`;
         test(`check overlayWatermarkMask on buffer [${fmt}]`, () => {
-            const expectFile = path.resolve(testfiles, "images", "excepted", expectFileName);
+            const expectFile = path.resolve(testfiles, "images", "expected", expectFileName);
             const buffer = watermarkLoader.overlayWatermarkMask(srcImageBuffer, ext, options);
             expect(buffer).toEqual(fs.readFileSync(expectFile));
         });
 
         test(`check overlayWatermarkMask on path [${fmt}]`, () => {
-            const expectFile = path.resolve(testfiles, "images", "excepted", expectFileName);
+            const expectFile = path.resolve(testfiles, "images", "expected", expectFileName);
             const buffer = watermarkLoader.overlayWatermarkMask(srcImage, ext, options);
             expect(buffer).toEqual(fs.readFileSync(expectFile));
         });

@@ -32,7 +32,7 @@ add_test(NAME generate_watermark
 
 
 
-file(GLOB TEST_EXPECTED_FILES ${TEST_IMAGES_PATH}/excepted/*)
+file(GLOB TEST_EXPECTED_FILES ${TEST_IMAGES_PATH}/expected/*)
 
 foreach(TEST_EXPECTED_FILE ${TEST_EXPECTED_FILES})
     get_filename_component(TEST_NAME ${TEST_EXPECTED_FILE} NAME)
