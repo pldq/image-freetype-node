@@ -17,6 +17,17 @@ runs:
       shell: bash
     - run: pnpm build --CDOpenCV_DIR="${{ inputs.opencv-cmake-find-dir }}"
       shell: bash
+    - name: Strip debug symbols
+      run: |
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          echo "Stripping .so files..."
+          find ./addon -name "*.so" -o -name "*.so.*" | xargs -I {} objcopy --strip-debug --remove-section .gnu.version {} {}
+        elif [ "${{ runner.os }}" == "Windows" ]; then
+          echo "Stripping .dll files..."
+          Get-ChildItem -Recurse -Filter "*.dll" -Path "./addon" | ForEach-Object { 
+            strip --strip-debug $_.FullName || echo "Could not strip $($_.FullName)"
+          }
+        fi
     - run: pnpm test
       shell: bash
     - name: Upload native addon artifacts
