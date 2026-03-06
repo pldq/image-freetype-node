@@ -27,7 +27,8 @@ runs:
       shell: powershell
       run: |
         Get-ChildItem -Recurse -Filter "*.dll" -Path "./addon" | ForEach-Object { 
-          strip --strip-debug $_.FullName || echo "Could not strip $($_.FullName)"
+          echo "strip $($_.FullName)..."
+          strip --strip-debug $_.FullName
         }
     - run: pnpm test
       shell: bash
