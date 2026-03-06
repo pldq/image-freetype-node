@@ -142,18 +142,18 @@ npm install
 When building the addon, you need to specify the OpenCV directory using the `--CDOpenCV_DIR` parameter. The value should be the path to the directory containing `OpenCVConfig.cmake` after building OpenCV.
 
 ```bash
-npm run build --CDOpenCV_DIR=/path/to/opencv/build
+npm run build -- --CDOpenCV_DIR=/path/to/opencv/build
 # or
-pnpm build --CDOpenCV_DIR=/path/to/opencv/build
+pnpm build -- --CDOpenCV_DIR=/path/to/opencv/build
 ```
 
 **Example:**
 ```bash
 # Windows
-npm run build --CDOpenCV_DIR=C:/opencv/build
+npm run build -- --CDOpenCV_DIR=C:/opencv/build
 
 # Linux/macOS
-npm run build --CDOpenCV_DIR=/usr/local/lib/cmake/opencv4
+npm run build -- --CDOpenCV_DIR=/usr/local/lib/cmake/opencv4
 ```
 
 The build script will automatically:
