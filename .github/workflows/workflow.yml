@@ -51,7 +51,7 @@ jobs:
         working-directory: ./script
         run: ${{ env.RUN_SCRIPT_FILE }} ${{ matrix.target }}
       - name: Upload opencv artifacts
-        uses: actions/upload-artifact@v7
+        uses: atos-actions/upload-artifact@v2.2.0
         with:
           name: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
           path: ${{ steps.opencv-artifact-env.outputs.OPENCV_BUILD_DIR }}
@@ -76,7 +76,7 @@ jobs:
           test-dir: ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_GENERATE_DIR }}
           verbose: true
       - name: Upload native watermark artifacts
-        uses: actions/upload-artifact@v7
+        uses: atos-actions/upload-artifact@v2.2.0
         with:
           name: native-watermark-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
           path: ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_BUILD_DIR }}
@@ -93,7 +93,7 @@ jobs:
     needs: native-build-and-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: atos-actions/download-artifact@v2.2.0
         with:
           pattern: addon-watermark-*
           path: tmp
@@ -102,7 +102,7 @@ jobs:
           mkdir addon
           mv tmp/*/* addon/
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: atos-actions/upload-artifact@v2.2.0
         with:
           name: image-freetype-node-addon
           path: addon

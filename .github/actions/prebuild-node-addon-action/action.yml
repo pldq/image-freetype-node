@@ -33,7 +33,7 @@ runs:
     - run: pnpm test
       shell: bash
     - name: Upload native addon artifacts
-      uses: actions/upload-artifact@v6
+      uses: atos-actions/upload-artifact@v2.2.0
       with:
         name: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
         path: ./addon
