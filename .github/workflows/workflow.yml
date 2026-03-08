@@ -63,7 +63,7 @@ jobs:
         shell: bash
         env:
           BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
-          GENERATE_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/generated/watermark
+          GENERATE_DIR: ./deps/${{ matrix.target }}/generated/watermark
         run: |
           echo "NATIVE_WATERMARK_GENERATE_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
           echo "NATIVE_WATERMARK_BUILD_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
