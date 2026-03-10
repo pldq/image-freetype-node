@@ -11,39 +11,15 @@ runs:
         node-version: '24.x'
         cache: pnpm
 
-    - name: Check release is desired
-      id: do-publish
-      shell: bash
-      run: |
-        PUBLISHED_VERSION=$(pnpm npm info --json . | jq -c '.version' -r)
-        THIS_VERSION=$(node -p "require('./package.json').version")
-        # Simple bash helper to comapre version numbers
-        verlte() {
-          [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
-        }
-        verlt() {
-          [ "$1" = "$2" ] && return 1 || verlte $1 $2
-        }
-        if verlt $PUBLISHED_VERSION $THIS_VERSION
-        then
-          echo "Publishing latest"
-          echo "tag=latest" >> $GITHUB_OUTPUT
-        else
-          echo "Publishing hotfix"
-          echo "tag=hotfix" >> $GITHUB_OUTPUT
-        fi
-
     - run: pnpm i
-      if: ${{ steps.do-publish.outputs.tag }}
       shell: bash
       env:
         CI: true
 
     - name: Publish to NPM
-      if: ${{ steps.do-publish.outputs.tag }}
       shell: bash
       run: |
-        npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }} --provenance
+        npm publish --access=public --provenance
 
         NEW_VERSION=$(node -p "require('./package.json').version")
         echo "**Published:** $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
