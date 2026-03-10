@@ -3,23 +3,19 @@ description: Publishes the package to the NPM registry with the appropriate tag.
 runs:
   using: "composite"
   steps:
-    - uses: pnpm/action-setup@v4
-
     - name: Use Node.js
       uses: actions/setup-node@v6
       with:
         node-version: '24.x'
         registry-url: 'https://registry.npmjs.org'
 
-    - run: pnpm i
+    - run: npm i
       shell: bash
-      env:
-        CI: true
 
     - name: Publish to NPM
       shell: bash
       run: |
-        npm publish --access=public --provenance
+        npm publish --access=public
 
         NEW_VERSION=$(node -p "require('./package.json').version")
         echo "**Published:** $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
