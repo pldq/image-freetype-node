@@ -162,7 +162,7 @@ jobs:
           pattern: '@(native|deps)-*'
           path: dist
 
-      - name: Release artificat
+      - name: Release artifact
         uses: softprops/action-gh-release@v2
         with:
           body_path: CHANGELOG.md
