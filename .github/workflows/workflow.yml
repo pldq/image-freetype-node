@@ -27,13 +27,13 @@ jobs:
         id: build-artifact-env
         shell: bash
         env:
-          OPENCV_DIR: ./deps/${{ matrix.target }}/opencv
+          OPENCV_DIR: deps/${{ matrix.target }}/opencv
           OPENCV_CMAKE_FIND_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
           OPENCV_ARTIFACT_NAME: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
           NATIVE_WATERMARK_ARTIFACT_NAME: native-watermark-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
         run: |
-          echo "OPENCV_BUILD_DIR=${{ env.OPENCV_DIR }}" >> $GITHUB_OUTPUT
-          echo "OPENCV_CMAKE_FIND_DIR=${{ env.OPENCV_DIR }}${{ env.OPENCV_CMAKE_FIND_SUFFIX }}" >> $GITHUB_OUTPUT
+          echo "OPENCV_BUILD_DIR=./${{ env.OPENCV_DIR }}" >> $GITHUB_OUTPUT
+          echo "OPENCV_CMAKE_FIND_DIR=${{ github.workspace }}/${{ env.OPENCV_DIR }}${{ env.OPENCV_CMAKE_FIND_SUFFIX }}" >> $GITHUB_OUTPUT
           echo "OPENCV_ARTIFACT_NAME=${{ env.OPENCV_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
           echo "OPENCV_ARTIFACT_FILE_NAME=${{ env.OPENCV_ARTIFACT_NAME }}.tar.gz" >> $GITHUB_OUTPUT
           echo "NATIVE_WATERMARK_ARTIFACT_NAME=${{ env.NATIVE_WATERMARK_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
