@@ -27,7 +27,7 @@ jobs:
         id: build-artifact-env
         shell: bash
         env:
-          OPENCV_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/opencv
+          OPENCV_DIR: ./deps/${{ matrix.target }}/opencv
           OPENCV_CMAKE_FIND_SUFFIX: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', '/lib/cmake/opencv4', '') }}
           OPENCV_ARTIFACT_NAME: deps-opencv-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
           NATIVE_WATERMARK_ARTIFACT_NAME: native-watermark-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ github.ref_name }}
@@ -73,11 +73,11 @@ jobs:
         id: build-native-watermark
         shell: bash
         env:
-          BUILD_DIR: ${{ github.workspace }}/deps/${{ matrix.target }}/watermark
+          BUILD_DIR: ./deps/${{ matrix.target }}/watermark
           GENERATE_DIR: ./deps/${{ matrix.target }}/generated/watermark
         run: |
           echo "NATIVE_WATERMARK_GENERATE_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
-          echo "NATIVE_WATERMARK_BUILD_DIR=${{ env.GENERATE_DIR }}" >> $GITHUB_OUTPUT
+          echo "NATIVE_WATERMARK_BUILD_DIR=${{ env.BUILD_DIR }}" >> $GITHUB_OUTPUT
           cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ steps.build-artifact-env.outputs.OPENCV_CMAKE_FIND_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
           cmake --build "${{ env.GENERATE_DIR }}" -j --config "${{ matrix.target }}" --target install
       - name: Test native watermark
