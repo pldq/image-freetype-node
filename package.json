@@ -18,6 +18,14 @@
     "script/buildNodeNative.js",
     "js/src/"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pldq/image-freetype-node.git"
+  },
   "keywords": [
     "watermark",
     "image",
