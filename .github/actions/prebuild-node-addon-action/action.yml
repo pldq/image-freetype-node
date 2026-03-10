@@ -25,14 +25,13 @@ runs:
       shell: bash
 
     - run: |
-        rm -f ${{ env.ARTIFACT_FILE_NAME }}
-        tar -cvzf ${{ env.ARTIFACT_FILE_NAME }} -C ./addon .
+        rm -f ${{ env.ARTIFACT_NAME }}.tar.gz
+        tar -cvzf ${{ env.ARTIFACT_NAME }}.tar.gz -C ./addon .
         echo "ADDON_ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
-        echo "ADDON_ARTIFACT_FILE_NAME=${{ env.ARTIFACT_FILE_NAME }}" >> $GITHUB_OUTPUT
+        echo "ADDON_ARTIFACT_FILE_NAME=${{ env.ARTIFACT_NAME }}.tar.gz" >> $GITHUB_OUTPUT
       shell: bash
       env:
         ARTIFACT_NAME: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
-        ARTIFACT_FILE_NAME: ${{ env.ARTIFACT_NAME }}.tar.gz
       id: build-addon-artifact
 
     - name: Upload native addon artifacts
