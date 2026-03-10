@@ -17,26 +17,23 @@ runs:
       shell: bash
     - run: pnpm build --CDOpenCV_DIR="${{ inputs.opencv-cmake-find-dir }}"
       shell: bash
-    - name: Strip debug symbols On Linux
-      if: ${{ runner.os == 'Linux' }}
-      shell: bash
-      run: |
-        find ./addon -name "*.so" -o -name "*.so.*" | xargs -I {} objcopy --strip-debug --remove-section .gnu.version {} {}
-    - name: Strip debug symbols On Windows
-      if: ${{ runner.os == 'Windows' }}
-      shell: powershell
-      run: |
-        Get-ChildItem -Recurse -Filter "*.dll" -Path "./addon" | ForEach-Object { 
-          echo "strip $($_.FullName)..."
-          strip --strip-debug $_.FullName
-        }
     - run: pnpm test
       shell: bash
+      env:
+        ARTIFACT_NAME: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
+        ARTIFACT_FILE_NAME: ${{ env.ARTIFACT_NAME }}.tar.gz
+    - run: |
+        rm -f ${{ env.ARTIFACT_FILE_NAME }}
+        tar -cvzf ${{ env.ARTIFACT_FILE_NAME }} -C ./addon .
+        echo "ADDON_ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
+        echo "ADDON_ARTIFACT_FILE_NAME=${{ env.ARTIFACT_FILE_NAME }}" >> $GITHUB_OUTPUT
+      shell: bash
+      id: build-addon-artifact
     - name: Upload native addon artifacts
-      uses: atos-actions/upload-artifact@v2.2.0
+      uses: actions/upload-artifact@v7
       with:
-        name: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
-        path: ./addon
+        name: ${{ steps.build-addon-artifact.outputs.ADDON_ARTIFACT_NAME }}
+        path: ${{ steps.build-addon-artifact.outputs.ADDON_ARTIFACT_FILE_NAME }}
         if-no-files-found: error
         retention-days: 1
         overwrite: true
