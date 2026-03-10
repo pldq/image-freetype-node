@@ -160,7 +160,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          pattern: @(native|deps)-*
+          pattern: '@(native|deps)-*'
           path: dist
 
       - name: Release artificat
