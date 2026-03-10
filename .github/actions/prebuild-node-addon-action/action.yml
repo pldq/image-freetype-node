@@ -8,27 +8,33 @@ runs:
   using: "composite"
   steps:
     - uses: pnpm/action-setup@v4
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version}}
         cache: pnpm
+
     - run: pnpm i
       shell: bash
+
     - run: pnpm build --CDOpenCV_DIR="${{ inputs.opencv-cmake-find-dir }}"
       shell: bash
+
     - run: pnpm test
       shell: bash
-      env:
-        ARTIFACT_NAME: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
-        ARTIFACT_FILE_NAME: ${{ env.ARTIFACT_NAME }}.tar.gz
+
     - run: |
         rm -f ${{ env.ARTIFACT_FILE_NAME }}
         tar -cvzf ${{ env.ARTIFACT_FILE_NAME }} -C ./addon .
         echo "ADDON_ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
         echo "ADDON_ARTIFACT_FILE_NAME=${{ env.ARTIFACT_FILE_NAME }}" >> $GITHUB_OUTPUT
       shell: bash
+      env:
+        ARTIFACT_NAME: addon-watermark-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}
+        ARTIFACT_FILE_NAME: ${{ env.ARTIFACT_NAME }}.tar.gz
       id: build-addon-artifact
+
     - name: Upload native addon artifacts
       uses: actions/upload-artifact@v7
       with:

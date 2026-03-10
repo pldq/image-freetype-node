@@ -4,11 +4,13 @@ runs:
   using: "composite"
   steps:
     - uses: pnpm/action-setup@v4
+
     - name: Use Node.js
       uses: actions/setup-node@v6
       with:
         node-version: '24.x'
         cache: pnpm
+
     - name: Check release is desired
       id: do-publish
       shell: bash
@@ -30,11 +32,13 @@ runs:
           echo "Publishing hotfix"
           echo "tag=hotfix" >> $GITHUB_OUTPUT
         fi
+
     - run: pnpm i
       if: ${{ steps.do-publish.outputs.tag }}
       shell: bash
       env:
         CI: true
+
     - name: Publish to NPM
       if: ${{ steps.do-publish.outputs.tag }}
       shell: bash

@@ -17,12 +17,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
+
       - name: Get submodule status hash
         id: submodule
         shell: bash
         run: |
           HASH=$(git submodule status --recursive | sha256sum | cut -d ' ' -f1)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
+
       - name: Setting artifact build environments
         id: build-artifact-env
         shell: bash
@@ -38,6 +40,7 @@ jobs:
           echo "OPENCV_ARTIFACT_FILE_NAME=${{ env.OPENCV_ARTIFACT_NAME }}.tar.gz" >> $GITHUB_OUTPUT
           echo "NATIVE_WATERMARK_ARTIFACT_NAME=${{ env.NATIVE_WATERMARK_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
           echo "NATIVE_WATERMARK_ARTIFACT_FILE_NAME=${{ env.NATIVE_WATERMARK_ARTIFACT_NAME }}.tar.gz" >> $GITHUB_OUTPUT
+
       - name: Cache opencv artifact
         id: cache-opencv-artifact
         uses: actions/cache@v5
@@ -46,21 +49,25 @@ jobs:
         with:
           path: ${{ steps.build-artifact-env.outputs.OPENCV_BUILD_DIR }}
           key: ${{ runner.os }}-${{ matrix.target }}-build-${{ env.CACHE_NAME }}-${{ steps.submodule.outputs.hash }}
+
       - name: Grant execute permission to build script
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' && (runner.os == 'Linux' || runner.os == 'macOS') }}
         working-directory: ./script
         run: chmod +x ./build.sh
+
       - name: Run build.sh on ${{ runner.os }}
         env:
           RUN_SCRIPT_FILE: ${{ case(runner.os == 'Linux' || runner.os == 'macOS', './build.sh', './build.ps1') }}
         if: ${{ steps.cache-opencv-artifact.outputs.cache-hit != 'true' }}
         working-directory: ./script
         run: ${{ env.RUN_SCRIPT_FILE }} ${{ matrix.target }}
+
       - name: Tar opencv artifacts
         shell: bash
         run: |
           rm -f ${{ steps.build-artifact-env.outputs.OPENCV_ARTIFACT_FILE_NAME }}
           tar -czvf ${{ steps.build-artifact-env.outputs.OPENCV_ARTIFACT_FILE_NAME }} -C ${{ steps.build-artifact-env.outputs.OPENCV_BUILD_DIR }} .
+
       - name: Upload opencv artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -69,6 +76,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
+
       - name: Build native watermark
         id: build-native-watermark
         shell: bash
@@ -80,17 +88,20 @@ jobs:
           echo "NATIVE_WATERMARK_BUILD_DIR=${{ env.BUILD_DIR }}" >> $GITHUB_OUTPUT
           cmake -B "${{ env.GENERATE_DIR }}" -DOpenCV_DIR="${{ steps.build-artifact-env.outputs.OPENCV_CMAKE_FIND_DIR }}" -DCMAKE_BUILD_TYPE="${{ matrix.target }}" -DCMAKE_INSTALL_PREFIX="${{ env.BUILD_DIR }}" .
           cmake --build "${{ env.GENERATE_DIR }}" -j --config "${{ matrix.target }}" --target install
+
       - name: Test native watermark
         uses: threeal/ctest-action@v1.1.0
         with:
           build-config: ${{ matrix.target }}
           test-dir: ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_GENERATE_DIR }}
           verbose: true
+
       - name: Tar native watermark artifacts
         shell: bash
         run: |
           rm -f ${{ steps.build-artifact-env.outputs.NATIVE_WATERMARK_ARTIFACT_FILE_NAME }}
           tar -czvf ${{ steps.build-artifact-env.outputs.NATIVE_WATERMARK_ARTIFACT_FILE_NAME }} -C ${{ steps.build-native-watermark.outputs.NATIVE_WATERMARK_BUILD_DIR }} .
+
       - name: Upload native watermark artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -99,6 +110,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
+
       - name: prebuild-node-addon
         if: ${{ matrix.target == 'Release' }}
         uses: ./.github/actions/prebuild-node-addon-action
@@ -115,36 +127,44 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: false
+
       - uses: actions/download-artifact@v8
         with:
           pattern: addon-watermark-*
           path: tmp
+
       - name: Display structure of downloaded files
         run: |
           mkdir addon
           find tmp -name "*.tar.gz" | xargs -I {} tar -xvf {} -C ./addon
+
       - run: | 
           rm -f image-freetype-node-addon.tar.gz
           tar -czvf image-freetype-node-addon.tar.gz -C ./addon .
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
           name: image-freetype-node-addon
           path: image-freetype-node-addon.tar.gz
           retention-days: 7
+
       - name: Cleanup addon tar file
         run: | 
           rm -f image-freetype-node-addon.tar.gz
           rm -rf tmp
+
       - name: Publish to npm
         if: contains(github.ref, 'refs/tags/')
         uses: ./.github/actions/publish-to-npm-registry
+
       - uses: actions/download-artifact@v8
         with:
           pattern: | 
             deps-*
             native-*
           path: dist
+
       - name: Release artificat
         uses: softprops/action-gh-release@v2
         with:
