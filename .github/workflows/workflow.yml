@@ -24,6 +24,9 @@ jobs:
           HASH=$(git submodule status --recursive | sha256sum | cut -d ' ' -f1)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
+      - run: git apply patch/*.patch
+        shell: bash
+
       - name: Setting artifact build environments
         id: build-artifact-env
         shell: bash

@@ -1,0 +1,35 @@
+Subject: [PATCH] Comment out version and SOVERSION settings for OpenCV modules
+---
+Index: vendor/opencv/cmake/OpenCVModule.cmake
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/vendor/opencv/cmake/OpenCVModule.cmake b/vendor/opencv/cmake/OpenCVModule.cmake
+--- a/vendor/opencv/cmake/OpenCVModule.cmake	(revision 49486f61fb25722cbcf586b7f4320921d46fb38e)
++++ b/vendor/opencv/cmake/OpenCVModule.cmake	(date 1773242504931)
+@@ -1027,15 +1027,15 @@
+     target_compile_definitions(${the_module} PRIVATE CVAPI_EXPORTS)
+   endif()
+ 
+-  # For dynamic link numbering conventions
+-  if(NOT ANDROID)
+-    # Android SDK build scripts can include only .so files into final .apk
+-    # As result we should not set version properties for Android
+-    set_target_properties(${the_module} PROPERTIES
+-      VERSION ${OPENCV_LIBVERSION}
+-      SOVERSION ${OPENCV_SOVERSION}
+-    )
+-  endif()
++#  # For dynamic link numbering conventions
++#  if(NOT ANDROID)
++#    # Android SDK build scripts can include only .so files into final .apk
++#    # As result we should not set version properties for Android
++#    set_target_properties(${the_module} PROPERTIES
++#      VERSION ${OPENCV_LIBVERSION}
++#      SOVERSION ${OPENCV_SOVERSION}
++#    )
++#  endif()
+ 
+   if (ENABLE_GNU_STL_DEBUG)
+     target_compile_definitions(${the_module} PUBLIC _GLIBCXX_DEBUG)
