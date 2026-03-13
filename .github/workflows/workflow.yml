@@ -168,5 +168,6 @@ jobs:
       - name: Release artifact
         uses: softprops/action-gh-release@v2
         with:
+          working_directory: ./dist
           body_path: CHANGELOG.md
-          files: dist/*
+          files: *

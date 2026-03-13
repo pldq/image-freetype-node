@@ -1,5 +1,3 @@
-# Changelog
-
 ### Added
 
 - Publish `node-watermark-loader` Node.js module with a native C++ addon (OpenCV + FreeType) for high-performance image watermarking.
