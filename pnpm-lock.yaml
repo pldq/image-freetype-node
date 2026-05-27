@@ -22,7 +22,7 @@ importers:
         version: 30.3.0(@types/node@25.6.0)
       node-addon-api:
         specifier: ^8.5.0
-        version: 8.7.0
+        version: 8.8.0
 
 packages:
 
@@ -387,6 +387,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -1092,8 +1093,8 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
-  node-addon-api@8.7.0:
-    resolution: {integrity: sha512-9MdFxmkKaOYVTV+XVRG8ArDwwQ77XIgIPyKASB1k3JPq3M8fGQQQE3YpMOrKm6g//Ktx8ivZr8xo1Qmtqub+GA==}
+  node-addon-api@8.8.0:
+    resolution: {integrity: sha512-c5Ko1fZJIJmzhFIkhRN76WTq+fC6tWnGy9CXA0fA+XygsWZmEwG8vmbkNqxMyoaa0Tin4djul49NzdVcJJcjeA==}
     engines: {node: ^18 || ^20 || >= 21}
 
   node-api-headers@1.8.0:
@@ -2764,7 +2765,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-addon-api@8.7.0: {}
+  node-addon-api@8.8.0: {}
 
   node-api-headers@1.8.0: {}
 
